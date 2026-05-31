@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login / Register — MovieRec</title>
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+  <style>
+    /* ── Variables ───────────────────────────────────────── */
+    :root {
+      --primary:    #e63946;
+      --primary-d:  #c1121f;
+      --accent:     #f4a261;
+      --teal:       #2ec4b6;
+      --dark:       #0f0e17;
+      --dark2:      #1a1a2e;
+      --card:       #ffffff;
+      --border:     #dee2e6;
+      --text:       #212529;
+      --muted:      #6c757d;
+      --radius:     14px;
+      --shadow:     0 20px 60px rgba(0,0,0,0.18);
+    }
+
+    /* ── Base ────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background: var(--dark);
+      overflow-x: hidden;
+    }
+
+    /* ── Animated background ─────────────────────────────── */
+    .bg-canvas {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      background: linear-gradient(135deg, #0f0e17 0%, #1a1a2e 50%, #16213e 100%);
+      overflow: hidden;
+    }
+
+    .bg-canvas::before {
+      content: '';
+      position: absolute;
+      width: 700px; height: 700px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(230,57,70,0.15) 0%, transparent 70%);
+      top: -200px; left: -200px;
+      animation: pulse 8s ease-in-out infinite alternate;
+    }
+
+    .bg-canvas::after {
+      content: '';
+      position: absolute;
+      width: 500px; height: 500px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(46,196,182,0.10) 0%, transparent 70%);
+      bottom: -150px; right: -150px;
+      animation: pulse 10s ease-in-out infinite alternate-reverse;
+    }
+
+    @keyframes pulse {
+      from { transform: scale(1);    opacity: 0.7; }
+      to   { transform: scale(1.25); opacity: 1;   }
+    }
+
+    /* Floating film icons */
+    .floater {
+      position: fixed;
+      font-size: 2rem;
+      opacity: 0.04;
+      animation: float linear infinite;
+      z-index: 0;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    @keyframes float {
+      from { transform: translateY(110vh) rotate(0deg); }
+      to   { transform: translateY(-10vh) rotate(360deg); }
+    }
+
+    /* ── Layout wrapper ──────────────────────────────────── */
+    .page-wrapper {
+      position: relative;
+      z-index: 1;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem;
+    }
+
+    /* ── Logo / brand ────────────────────────────────────── */
+    .brand {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .brand-icon {
+      font-size: 3rem;
+      display: block;
+      margin-bottom: 0.5rem;
+      filter: drop-shadow(0 0 18px rgba(230,57,70,0.5));
+      animation: iconBounce 3s ease-in-out infinite;
+    }
+
+    @keyframes iconBounce {
+      0%,100% { transform: translateY(0); }
+      50%      { transform: translateY(-8px); }
+    }
+
+    .brand-name {
+      font-size: 2rem;
+      font-weight: 900;
+      color: #fff;
+      letter-spacing: -1px;
+    }
+
+    .brand-name span { color: var(--primary); }
+
+    .brand-sub {
+      font-size: 0.88rem;
+      color: rgba(255,255,255,0.45);
+      margin-top: 0.2rem;
+    }
+
+    /* ── Card ────────────────────────────────────────────── */
+    .auth-card {
+      background: #fff;
+      border-radius: 20px;
+      box-shadow: var(--shadow);
+      width: 100%;
+      max-width: 460px;
+      overflow: hidden;
+    }
+
+    /* ── Tab switcher ────────────────────────────────────── */
+    .tab-bar {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      background: #f1f3f5;
+    }
+
+    .tab-btn {
+      padding: 1rem;
+      border: none;
+      background: transparent;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.25s;
+      position: relative;
+    }
+
+    .tab-btn.active {
+      background: #fff;
+      color: var(--primary);
+    }
+
+    .tab-btn.active::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 3px;
+      background: var(--primary);
+      border-radius: 3px 3px 0 0;
+    }
+
+    /* ── Form panels ─────────────────────────────────────── */
+    .auth-panel {
+      padding: 2rem 2rem 1.5rem;
+      display: none;
+    }
+
+    .auth-panel.active { display: block; }
+
+    /* ── Field group ─────────────────────────────────────── */
+    .field-group {
+      margin-bottom: 1.1rem;
+    }
+
+    .field-label {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      margin-bottom: 0.4rem;
+      display: block;
+    }
+
+    .input-wrap {
+      position: relative;
+    }
+
+    .input-icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #adb5bd;
+      font-size: 0.9rem;
+      pointer-events: none;
+      transition: color 0.2s;
+    }
+
+    .form-input {
+      width: 100%;
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      padding: 0.65rem 0.9rem 0.65rem 2.6rem;
+      font-size: 0.95rem;
+      color: var(--text);
+      background: #fafafa;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+    }
+
+    .form-input:focus {
+      border-color: var(--primary);
+      background: #fff;
+      box-shadow: 0 0 0 4px rgba(230,57,70,0.1);
+    }
+
+    .form-input:focus + .input-icon,
+    .input-wrap:focus-within .input-icon { color: var(--primary); }
+
+    /* Password toggle */
+    .pw-toggle {
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: #adb5bd;
+      cursor: pointer;
+      font-size: 0.9rem;
+      padding: 0;
+      transition: color 0.2s;
+    }
+
+    .pw-toggle:hover { color: var(--primary); }
+
+    /* ── Validation states ───────────────────────────────── */
+    .form-input.is-valid   { border-color: #2ecc71; background: #f8fff8; }
+    .form-input.is-invalid { border-color: var(--primary); background: #fff8f8; }
+
+    .field-msg {
+      font-size: 0.78rem;
+      margin-top: 0.35rem;
+      min-height: 1em;
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .field-msg.error { color: var(--primary); }
+    .field-msg.ok    { color: #2ecc71; }
+
+    /* ── Password strength ───────────────────────────────── */
+    .strength-bar {
+      height: 4px;
+      border-radius: 2px;
+      background: var(--border);
+      margin-top: 6px;
+      overflow: hidden;
+    }
+
+    .strength-fill {
+      height: 100%;
+      border-radius: 2px;
+      transition: width 0.4s, background 0.4s;
+      width: 0;
+    }
+
+    .strength-text {
+      font-size: 0.72rem;
+      color: var(--muted);
+      margin-top: 3px;
+    }
+
+    /* ── Requirements list ───────────────────────────────── */
+    .requirements {
+      list-style: none;
+      padding: 0;
+      margin: 0.4rem 0 0;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.3rem;
+    }
+
+    .req-item {
+      font-size: 0.74rem;
+      padding: 0.1rem 0.55rem;
+      border-radius: 50px;
+      background: #f1f3f5;
+      color: var(--muted);
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 0.2rem;
+    }
+
+    .req-item.met {
+      background: rgba(46,204,113,0.12);
+      color: #27ae60;
+    }
+
+    /* ── Submit button ───────────────────────────────────── */
+    .btn-submit {
+      width: 100%;
+      padding: 0.8rem;
+      border: none;
+      border-radius: 10px;
+      background: var(--primary);
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.25s;
+      margin-top: 0.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-submit:hover:not(:disabled) {
+      background: var(--primary-d);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(230,57,70,0.35);
+    }
+
+    .btn-submit:active:not(:disabled) { transform: translateY(0); }
+
+    .btn-submit:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+
+    /* Loading spinner inside button */
+    .btn-spinner {
+      display: none;
+      width: 18px; height: 18px;
+      border: 2.5px solid rgba(255,255,255,0.4);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      margin: 0 auto;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Global alert ────────────────────────────────────── */
+    .global-alert {
+      border-radius: 10px;
+      padding: 0.75rem 1rem;
+      font-size: 0.88rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      display: none;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .global-alert.error   { background:#fdf0f0; border:1.5px solid #f5c6cb; color:#c0392b; display:flex; }
+    .global-alert.success { background:#f0fdf4; border:1.5px solid #b7e4c7; color:#1e8449; display:flex; }
+
+    /* ── Divider ─────────────────────────────────────────── */
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin: 1.1rem 0;
+      color: #adb5bd;
+      font-size: 0.8rem;
+    }
+
+    .divider::before, .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* ── Footer note ─────────────────────────────────────── */
+    .switch-note {
+      text-align: center;
+      font-size: 0.85rem;
+      color: var(--muted);
+      padding: 1rem 2rem 1.5rem;
+      border-top: 1px solid var(--border);
+      margin-top: 0.5rem;
+    }
+
+    .switch-note a {
+      color: var(--primary);
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    .switch-note a:hover { text-decoration: underline; }
+
+    /* ── Bottom tagline ──────────────────────────────────── */
+    .tagline {
+      text-align: center;
+      color: rgba(255,255,255,0.3);
+      font-size: 0.8rem;
+      margin-top: 1.5rem;
+    }
+
+    /* ── Responsive ──────────────────────────────────────── */
+    @media (max-width: 480px) {
+      .auth-card { border-radius: 16px; }
+      .auth-panel { padding: 1.5rem 1.25rem 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Animated background -->
+<div class="bg-canvas"></div>
+
+<!-- Floating film reel emojis -->
+<div class="floater" style="left:8%;  animation-duration:18s; animation-delay:0s;   font-size:2.5rem">🎬</div>
+<div class="floater" style="left:22%; animation-duration:24s; animation-delay:4s;   font-size:1.8rem">🎥</div>
+<div class="floater" style="left:40%; animation-duration:20s; animation-delay:8s;   font-size:2rem">⭐</div>
+<div class="floater" style="left:60%; animation-duration:16s; animation-delay:2s;   font-size:2.2rem">🎞️</div>
+<div class="floater" style="left:75%; animation-duration:22s; animation-delay:6s;   font-size:1.6rem">🍿</div>
+<div class="floater" style="left:88%; animation-duration:19s; animation-delay:10s;  font-size:2rem">🎬</div>
+
+<!-- ── Page ───────────────────────────────────────────────── -->
+<div class="page-wrapper">
+
+  <!-- Brand -->
+  <div class="brand">
+    <span class="brand-icon">🎬</span>
+    <div class="brand-name">Movie<span>Rec</span></div>
+    <div class="brand-sub">Your personal movie recommendation engine</div>
+  </div>
+
+  <!-- Auth Card -->
+  <div class="auth-card">
+
+    <!-- Tab bar -->
+    <div class="tab-bar">
+      <button class="tab-btn active" id="tabLogin" onclick="switchTab('login')">
+        <i class="fas fa-sign-in-alt me-1"></i> Login
+      </button>
+      <button class="tab-btn" id="tabRegister" onclick="switchTab('register')">
+        <i class="fas fa-user-plus me-1"></i> Register
+      </button>
+    </div>
+
+    <!-- ══ LOGIN PANEL ══════════════════════════════════════ -->
+    <div class="auth-panel active" id="panelLogin">
+
+      <div class="global-alert" id="loginAlert"></div>
+
+      <!-- Email -->
+      <div class="field-group">
+        <label class="field-label" for="loginEmail">Email Address</label>
+        <div class="input-wrap">
+          <input type="email" id="loginEmail" class="form-input"
+                 placeholder="you@example.com" autocomplete="email" />
+          <i class="fas fa-envelope input-icon"></i>
+        </div>
+        <div class="field-msg" id="loginEmailMsg"></div>
+      </div>
+
+      <!-- Password -->
+      <div class="field-group">
+        <label class="field-label" for="loginPassword">Password</label>
+        <div class="input-wrap">
+          <input type="password" id="loginPassword" class="form-input"
+                 placeholder="Enter your password" autocomplete="current-password" />
+          <i class="fas fa-lock input-icon"></i>
+          <button class="pw-toggle" type="button" onclick="togglePw('loginPassword', this)">
+            <i class="fas fa-eye"></i>
+          </button>
+        </div>
+        <div class="field-msg" id="loginPasswordMsg"></div>
+      </div>
+
+      <button class="btn-submit" id="loginBtn" onclick="submitLogin()">
+        <span id="loginBtnText"><i class="fas fa-sign-in-alt me-2"></i>Login</span>
+        <div class="btn-spinner" id="loginSpinner"></div>
+      </button>
+    </div>
+
+    <!-- ══ REGISTER PANEL ════════════════════════════════════ -->
+    <div class="auth-panel" id="panelRegister">
+
+      <div class="global-alert" id="registerAlert"></div>
+
+      <!-- Full Name -->
+      <div class="field-group">
+        <label class="field-label" for="regName">Full Name</label>
+        <div class="input-wrap">
+          <input type="text" id="regName" class="form-input"
+                 placeholder="e.g. Rahul Sharma" autocomplete="name"
+                 oninput="liveValidateName(this)" />
+          <i class="fas fa-user input-icon"></i>
+        </div>
+        <div class="field-msg" id="regNameMsg"></div>
+      </div>
+
+      <!-- Email -->
+      <div class="field-group">
+        <label class="field-label" for="regEmail">Email Address</label>
+        <div class="input-wrap">
+          <input type="email" id="regEmail" class="form-input"
+                 placeholder="you@example.com" autocomplete="email"
+                 oninput="liveValidateEmail(this)" />
+          <i class="fas fa-envelope input-icon"></i>
+        </div>
+        <div class="field-msg" id="regEmailMsg"></div>
+      </div>
+
+      <!-- Password -->
+      <div class="field-group">
+        <label class="field-label" for="regPassword">Password</label>
+        <div class="input-wrap">
+          <input type="password" id="regPassword" class="form-input"
+                 placeholder="Min 6 chars with a number" autocomplete="new-password"
+                 oninput="liveValidatePassword(this)" />
+          <i class="fas fa-lock input-icon"></i>
+          <button class="pw-toggle" type="button" onclick="togglePw('regPassword', this)">
+            <i class="fas fa-eye"></i>
+          </button>
+        </div>
+        <!-- Strength bar -->
+        <div class="strength-bar"><div class="strength-fill" id="strengthFill"></div></div>
+        <div class="strength-text" id="strengthText"></div>
+        <!-- Requirements -->
+        <ul class="requirements">
+          <li class="req-item" id="req-len">  <span>●</span> 6+ chars</li>
+          <li class="req-item" id="req-letter"><span>●</span> Letter</li>
+          <li class="req-item" id="req-num">  <span>●</span> Number</li>
+        </ul>
+        <div class="field-msg" id="regPasswordMsg"></div>
+      </div>
+
+      <!-- Confirm Password -->
+      <div class="field-group">
+        <label class="field-label" for="regConfirm">Confirm Password</label>
+        <div class="input-wrap">
+          <input type="password" id="regConfirm" class="form-input"
+                 placeholder="Re-enter your password" autocomplete="new-password"
+                 oninput="liveValidateConfirm(this)" />
+          <i class="fas fa-lock input-icon"></i>
+          <button class="pw-toggle" type="button" onclick="togglePw('regConfirm', this)">
+            <i class="fas fa-eye"></i>
+          </button>
+        </div>
+        <div class="field-msg" id="regConfirmMsg"></div>
+      </div>
+
+      <button class="btn-submit" id="registerBtn" onclick="submitRegister()">
+        <span id="registerBtnText"><i class="fas fa-user-plus me-2"></i>Create Account</span>
+        <div class="btn-spinner" id="registerSpinner"></div>
+      </button>
+    </div>
+
+    <!-- Switch note -->
+    <div class="switch-note" id="switchNote">
+      Don't have an account?
+      <a onclick="switchTab('register')">Register here</a>
+    </div>
+
+  </div><!-- /auth-card -->
+
+  <div class="tagline">
+    🎬 Discover movies you'll love · Powered by AI recommendations
+  </div>
+
+</div><!-- /page-wrapper -->
+
+<script>
+// ── Tab switching ─────────────────────────────────────────────
+function switchTab(tab) {
+  const isLogin = tab === "login";
+  document.getElementById("panelLogin").classList.toggle("active", isLogin);
+  document.getElementById("panelRegister").classList.toggle("active", !isLogin);
+  document.getElementById("tabLogin").classList.toggle("active", isLogin);
+  document.getElementById("tabRegister").classList.toggle("active", !isLogin);
+  document.getElementById("switchNote").innerHTML = isLogin
+    ? `Don't have an account? <a onclick="switchTab('register')">Register here</a>`
+    : `Already have an account? <a onclick="switchTab('login')">Login here</a>`;
+  clearAlerts();
+}
+
+// ── Password visibility toggle ────────────────────────────────
+function togglePw(inputId, btn) {
+  const input = document.getElementById(inputId);
+  const icon  = btn.querySelector("i");
+  const show  = input.type === "password";
+  input.type  = show ? "text" : "password";
+  icon.className = show ? "fas fa-eye-slash" : "fas fa-eye";
+}
+
+// ── Field message helpers ─────────────────────────────────────
+function setMsg(id, text, type) {
+  const el = document.getElementById(id);
+  el.className = `field-msg ${type}`;
+  el.innerHTML = text ? `<i class="fas fa-${type === 'ok' ? 'check-circle' : 'exclamation-circle'}"></i> ${text}` : "";
+}
+
+function setInputState(input, state) {
+  input.classList.remove("is-valid", "is-invalid");
+  if (state) input.classList.add(state === "ok" ? "is-valid" : "is-invalid");
+}
+
+function clearAlerts() {
+  ["loginAlert","registerAlert"].forEach(id => {
+    const el = document.getElementById(id);
+    el.className = "global-alert";
+    el.innerHTML = "";
+  });
+}
+
+function showAlert(id, msg, type) {
+  const el = document.getElementById(id);
+  el.className = `global-alert ${type}`;
+  el.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'times-circle'}"></i> ${msg}`;
+}
+
+// ── Live validation: Name ─────────────────────────────────────
+function liveValidateName(input) {
+  const val = input.value.trim();
+  if (!val) { setMsg("regNameMsg","",""); setInputState(input,""); return false; }
+  if (val.length < 2) {
+    setMsg("regNameMsg","At least 2 characters required","error");
+    setInputState(input,"error"); return false;
+  }
+  if (!/^[A-Za-z ]+$/.test(val)) {
+    setMsg("regNameMsg","Only letters and spaces allowed","error");
+    setInputState(input,"error"); return false;
+  }
+  setMsg("regNameMsg","Looks good!","ok");
+  setInputState(input,"ok"); return true;
+}
+
+// ── Live validation: Email ────────────────────────────────────
+function liveValidateEmail(input) {
+  const val = input.value.trim();
+  if (!val) { setMsg("regEmailMsg","",""); setInputState(input,""); return false; }
+  const ok = /^[\w.\+\-]+@[\w\-]+\.[a-zA-Z]{2,}$/.test(val);
+  if (!ok) {
+    setMsg("regEmailMsg","Enter a valid email (e.g. user@gmail.com)","error");
+    setInputState(input,"error"); return false;
+  }
+  setMsg("regEmailMsg","Valid email ✓","ok");
+  setInputState(input,"ok"); return true;
+}
+
+// ── Live validation: Password ─────────────────────────────────
+function liveValidatePassword(input) {
+  const val = input.value;
+  const hasLen    = val.length >= 6;
+  const hasLetter = /[A-Za-z]/.test(val);
+  const hasNum    = /[0-9]/.test(val);
+
+  // Requirements pills
+  document.getElementById("req-len").classList.toggle("met", hasLen);
+  document.getElementById("req-letter").classList.toggle("met", hasLetter);
+  document.getElementById("req-num").classList.toggle("met", hasNum);
+
+  // Strength
+  const score = [hasLen, hasLetter, hasNum, val.length >= 10,
+                 /[^A-Za-z0-9]/.test(val)].filter(Boolean).length;
+  const fill  = document.getElementById("strengthFill");
+  const text  = document.getElementById("strengthText");
+  const levels = [
+    {w:"0%",   color:"transparent", label:""},
+    {w:"25%",  color:"#e74c3c",     label:"Weak"},
+    {w:"50%",  color:"#e67e22",     label:"Fair"},
+    {w:"75%",  color:"#f1c40f",     label:"Good"},
+    {w:"90%",  color:"#2ecc71",     label:"Strong"},
+    {w:"100%", color:"#27ae60",     label:"Very Strong"},
+  ];
+  const lv = levels[Math.min(score, 5)];
+  fill.style.width      = lv.w;
+  fill.style.background = lv.color;
+  text.textContent      = lv.label ? `Strength: ${lv.label}` : "";
+
+  if (!val) { setMsg("regPasswordMsg","",""); setInputState(input,""); return false; }
+  const allMet = hasLen && hasLetter && hasNum;
+  if (!allMet) {
+    setMsg("regPasswordMsg","Complete all requirements below","error");
+    setInputState(input,"error"); return false;
+  }
+  setMsg("regPasswordMsg","Strong password ✓","ok");
+  setInputState(input,"ok");
+
+  // Re-validate confirm if already filled
+  const confirm = document.getElementById("regConfirm");
+  if (confirm.value) liveValidateConfirm(confirm);
+  return true;
+}
+
+// ── Live validation: Confirm password ────────────────────────
+function liveValidateConfirm(input) {
+  const pw  = document.getElementById("regPassword").value;
+  const val = input.value;
+  if (!val) { setMsg("regConfirmMsg","",""); setInputState(input,""); return false; }
+  if (val !== pw) {
+    setMsg("regConfirmMsg","Passwords do not match","error");
+    setInputState(input,"error"); return false;
+  }
+  setMsg("regConfirmMsg","Passwords match ✓","ok");
+  setInputState(input,"ok"); return true;
+}
+
+// ── Button loading state ──────────────────────────────────────
+function setLoading(btnId, textId, spinnerId, loading) {
+  document.getElementById(btnId).disabled = loading;
+  document.getElementById(textId).style.display  = loading ? "none"         : "";
+  document.getElementById(spinnerId).style.display = loading ? "block" : "none";
+}
+
+// ── Submit: Login ─────────────────────────────────────────────
+async function submitLogin() {
+  clearAlerts();
+  const email    = document.getElementById("loginEmail").value.trim();
+  const password = document.getElementById("loginPassword").value;
+
+  // Front-end guard
+  if (!email || !password) {
+    showAlert("loginAlert", "Please enter both email and password.", "error");
+    return;
+  }
+  if (!/^[\w.\+\-]+@[\w\-]+\.[a-zA-Z]{2,}$/.test(email)) {
+    setMsg("loginEmailMsg", "Enter a valid email address", "error");
+    setInputState(document.getElementById("loginEmail"), "error");
+    return;
+  }
+
+  setLoading("loginBtn","loginBtnText","loginSpinner", true);
+
+  try {
+    const res  = await fetch("/api/auth/login", {
+      method:  "POST",
+      headers: {"Content-Type":"application/json"},
+      body:    JSON.stringify({ email, password })
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      showAlert("loginAlert", data.message, "success");
+      setTimeout(() => window.location.href = data.redirect || "/", 800);
+    } else {
+      showAlert("loginAlert", data.error, "error");
+      // Highlight specific field
+      if (data.field === "email") {
+        setMsg("loginEmailMsg", data.error, "error");
+        setInputState(document.getElementById("loginEmail"), "error");
+      } else {
+        setMsg("loginPasswordMsg", data.error, "error");
+        setInputState(document.getElementById("loginPassword"), "error");
+      }
+      setLoading("loginBtn","loginBtnText","loginSpinner", false);
+    }
+  } catch (e) {
+    showAlert("loginAlert", "Network error. Please try again.", "error");
+    setLoading("loginBtn","loginBtnText","loginSpinner", false);
+  }
+}
+
+// ── Submit: Register ──────────────────────────────────────────
+async function submitRegister() {
+  clearAlerts();
+
+  const nameInput    = document.getElementById("regName");
+  const emailInput   = document.getElementById("regEmail");
+  const pwInput      = document.getElementById("regPassword");
+  const confirmInput = document.getElementById("regConfirm");
+
+  // Run all live validations
+  const nameOk    = liveValidateName(nameInput);
+  const emailOk   = liveValidateEmail(emailInput);
+  const pwOk      = liveValidatePassword(pwInput);
+  const confirmOk = liveValidateConfirm(confirmInput);
+
+  if (!nameOk || !emailOk || !pwOk || !confirmOk) {
+    showAlert("registerAlert", "Please fix the errors above before continuing.", "error");
+    return;
+  }
+
+  setLoading("registerBtn","registerBtnText","registerSpinner", true);
+
+  try {
+    const res  = await fetch("/api/auth/register", {
+      method:  "POST",
+      headers: {"Content-Type":"application/json"},
+      body:    JSON.stringify({
+        name:     nameInput.value.trim(),
+        email:    emailInput.value.trim().toLowerCase(),
+        password: pwInput.value
+      })
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      showAlert("registerAlert", `🎉 ${data.message} Redirecting…`, "success");
+      setTimeout(() => window.location.href = data.redirect || "/", 1000);
+    } else {
+      showAlert("registerAlert", data.error, "error");
+      // Highlight field
+      const fieldMap = {
+        name:     [nameInput,    "regNameMsg"],
+        email:    [emailInput,   "regEmailMsg"],
+        password: [pwInput,      "regPasswordMsg"],
+      };
+      if (data.field && fieldMap[data.field]) {
+        const [inp, msgId] = fieldMap[data.field];
+        setInputState(inp, "error");
+        setMsg(msgId, data.error, "error");
+      }
+      setLoading("registerBtn","registerBtnText","registerSpinner", false);
+    }
+  } catch (e) {
+    showAlert("registerAlert", "Network error. Please try again.", "error");
+    setLoading("registerBtn","registerBtnText","registerSpinner", false);
+  }
+}
+
+// ── Enter key support ─────────────────────────────────────────
+document.addEventListener("keydown", e => {
+  if (e.key !== "Enter") return;
+  if (document.getElementById("panelLogin").classList.contains("active")) {
+    submitLogin();
+  } else {
+    submitRegister();
+  }
+});
+</script>
+
+</body>
+</html>
