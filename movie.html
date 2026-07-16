@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Movie Detail — MovieRec</title>
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="/static/css/style.css" />
+</head>
+
+<!-- data-page and data-movie-id are read by main.js to know which init function to call -->
+<body data-page="detail" data-movie-id="{{ movie.id }}">
+
+<!-- ══ NAVBAR ══════════════════════════════════════════════ -->
+<nav class="navbar navbar-expand-lg">
+  <div class="container">
+    <a class="navbar-brand" href="/">🎬 Movie<span>Rec</span></a>
+
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu"
+            style="border-color:rgba(255,255,255,0.3)">
+      <span class="navbar-toggler-icon" style="filter:invert(1)"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navMenu">
+      <ul class="navbar-nav me-auto ms-3 gap-1">
+        <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
+        <li class="nav-item"><a class="nav-link" href="/">Top Rated</a></li>
+      </ul>
+
+      <form class="d-flex align-items-center gap-2 me-2" id="navSearchForm">
+        <div style="position:relative">
+          <input type="text" id="navSearch" placeholder="Quick search…" autocomplete="off" />
+          <button type="submit" id="navSearchBtn"><i class="fas fa-search"></i></button>
+        </div>
+      </form>
+
+      <button class="dark-toggle me-2">🌙 Dark</button>
+      <div class="d-flex align-items-center gap-2">
+        <div style="background:var(--primary);color:#fff;border-radius:50%;
+                    width:32px;height:32px;display:flex;align-items:center;
+                    justify-content:center;font-weight:800;font-size:0.9rem;flex-shrink:0">
+          {{ user_name[0].upper() if user_name else '?' }}
+        </div>
+        <span style="color:rgba(255,255,255,0.85);font-size:0.88rem;font-weight:600">{{ user_name }}</span>
+        <a href="/logout"
+           style="background:rgba(230,57,70,0.18);border:1px solid rgba(230,57,70,0.4);
+                  color:var(--primary);border-radius:8px;padding:0.3rem 0.75rem;
+                  font-size:0.82rem;font-weight:700;transition:all 0.2s"
+           onmouseover="this.style.background='rgba(230,57,70,0.35)'"
+           onmouseout="this.style.background='rgba(230,57,70,0.18)'">
+          <i class="fas fa-sign-out-alt me-1"></i>Logout
+        </a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- ══ BREADCRUMB ══════════════════════════════════════════ -->
+<div style="background:var(--dark-2);padding:0.6rem 0;border-bottom:1px solid rgba(255,255,255,0.07)">
+  <div class="container">
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb mb-0" style="font-size:0.85rem">
+        <li class="breadcrumb-item">
+          <a href="/" style="color:var(--accent)">🏠 Home</a>
+        </li>
+        <li class="breadcrumb-item active" style="color:rgba(255,255,255,0.6)" id="breadcrumbTitle">
+          {{ movie.title }}
+        </li>
+      </ol>
+    </nav>
+  </div>
+</div>
+
+<!-- ══ DETAIL HERO ═════════════════════════════════════════ -->
+<section class="detail-hero">
+  <div class="container">
+    <div class="row g-4 align-items-start">
+
+      <!-- Poster -->
+      <div class="col-sm-4 col-md-3">
+        <div class="detail-poster-wrap">
+          <div class="poster-placeholder" id="detailPoster"
+               style="background:#{{ movie.poster_color }}; min-height:360px">
+            <div class="movie-icon">🎬</div>
+            <div class="poster-title">{{ movie.title }}</div>
+            <div class="poster-year">{{ movie.year }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Info -->
+      <div class="col-sm-8 col-md-9">
+
+        <!-- Rating -->
+        <div class="detail-rating-big">
+          <div>
+            <div class="detail-rating-num" id="detailRatingNum">{{ movie.rating }}/10</div>
+            <div class="detail-rating-label">IMDb Rating</div>
+          </div>
+          <div style="font-size:1.6rem;margin-left:0.3rem">⭐</div>
+        </div>
+
+        <h1 class="detail-title" id="detailTitle">{{ movie.title }}</h1>
+
+        <!-- Meta row -->
+        <div class="detail-meta">
+          <span class="meta-item"><i class="fas fa-calendar-alt"></i> <span id="detailYear">{{ movie.year }}</span></span>
+          <span class="meta-item"><i class="fas fa-clock"></i> <span id="detailDuration">{{ movie.duration }} min</span></span>
+          <span class="meta-item"><i class="fas fa-video"></i> <span id="detailDirector">{{ movie.director }}</span></span>
+          <span class="meta-item"><i class="fas fa-globe"></i> <span id="detailLanguage">{{ movie.language }}</span></span>
+        </div>
+
+        <!-- Genres -->
+        <div class="detail-genres" id="detailGenres">
+          {% for g in movie.genre %}
+          <span class="genre-badge" style="background:
+            {% if g == 'Action' %}#e74c3c
+            {% elif g == 'Adventure' %}#e67e22
+            {% elif g == 'Animation' %}#f39c12
+            {% elif g == 'Comedy' %}#2ecc71
+            {% elif g == 'Crime' %}#8e44ad
+            {% elif g == 'Drama' %}#3498db
+            {% elif g == 'History' %}#795548
+            {% elif g == 'Horror' %}#1a1a1a
+            {% elif g == 'Music' %}#9b59b6
+            {% elif g == 'Mystery' %}#2c3e50
+            {% elif g == 'Romance' %}#e91e63
+            {% elif g == 'Sci-Fi' %}#00bcd4
+            {% elif g == 'Thriller' %}#f44336
+            {% elif g == 'War' %}#607d8b
+            {% else %}#666
+            {% endif %}
+          ">{{ g }}</span>
+          {% endfor %}
+        </div>
+
+        <!-- Description -->
+        <p class="detail-description mt-3" id="detailDesc">{{ movie.description }}</p>
+
+        <!-- Tags -->
+        <div class="tags-list" id="detailTags">
+          {% for tag in movie.tags %}
+          <span class="tag-chip">#{{ tag }}</span>
+          {% endfor %}
+        </div>
+
+        <!-- Cast -->
+        <h6 class="mt-3" style="color:rgba(255,255,255,0.5);font-size:0.78rem;letter-spacing:1px;text-transform:uppercase">Cast</h6>
+        <div class="cast-list" id="detailCast">
+          {% for actor in movie.cast %}
+          <span class="cast-item">👤 {{ actor }}</span>
+          {% endfor %}
+        </div>
+
+        <!-- Community Rating -->
+        <p class="mt-3" style="color:rgba(255,255,255,0.5);font-size:0.85rem" id="userRatingDisplay">
+          Community: No ratings yet
+        </p>
+
+        <!-- Action Buttons -->
+        <div class="d-flex flex-wrap gap-2 mt-3">
+          <a href="/recommend/{{ movie.id }}"
+             class="btn btn-sm"
+             style="background:var(--primary);color:#fff;border-radius:8px;font-weight:600;padding:0.5rem 1.2rem">
+            <i class="fas fa-magic me-1"></i> Get Recommendations
+          </a>
+          <a href="/"
+             class="btn btn-sm"
+             style="background:rgba(255,255,255,0.1);color:#fff;border:1px solid rgba(255,255,255,0.25);border-radius:8px;font-weight:600;padding:0.5rem 1.2rem">
+            <i class="fas fa-arrow-left me-1"></i> Back to Browse
+          </a>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ MAIN CONTENT ════════════════════════════════════════ -->
+<main class="container py-4">
+  <div class="row g-4">
+
+    <!-- Left col: movie details card -->
+    <div class="col-lg-4">
+
+      <!-- About card -->
+      <div class="star-rating-widget mb-3">
+        <h5><i class="fas fa-info-circle me-2" style="color:var(--teal)"></i>Movie Info</h5>
+        <table class="table table-sm mb-0" style="color:var(--text);font-size:0.88rem">
+          <tbody>
+            <tr><td style="color:var(--text-muted);width:45%">Title</td>
+                <td><strong>{{ movie.title }}</strong></td></tr>
+            <tr><td style="color:var(--text-muted)">Year</td>
+                <td>{{ movie.year }}</td></tr>
+            <tr><td style="color:var(--text-muted)">Director</td>
+                <td>{{ movie.director }}</td></tr>
+            <tr><td style="color:var(--text-muted)">Duration</td>
+                <td>{{ movie.duration }} minutes</td></tr>
+            <tr><td style="color:var(--text-muted)">Language</td>
+                <td>{{ movie.language }}</td></tr>
+            <tr><td style="color:var(--text-muted)">IMDb Rating</td>
+                <td><strong style="color:var(--accent)">⭐ {{ movie.rating }}/10</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Rating widget -->
+      <div class="star-rating-widget">
+        <h5><i class="fas fa-star me-2" style="color:var(--accent)"></i>Rate This Movie</h5>
+        <p style="font-size:0.85rem;color:var(--text-muted)">Click a star to rate (1–5 = 2–10 scale)</p>
+
+        <div class="stars-container">
+          <span class="star" data-val="1">★</span>
+          <span class="star" data-val="2">★</span>
+          <span class="star" data-val="3">★</span>
+          <span class="star" data-val="4">★</span>
+          <span class="star" data-val="5">★</span>
+        </div>
+
+        <div class="rating-value-display" id="ratingValueDisplay">Hover over stars to rate</div>
+        <button class="btn-rate mt-2" id="rateBtn">
+          <i class="fas fa-paper-plane me-1"></i> Submit Rating
+        </button>
+      </div>
+
+    </div>
+
+    <!-- Right col: recommendations preview -->
+    <div class="col-lg-8">
+      <div class="section-header">
+        <h2 class="section-title">🤖 You May Also Like</h2>
+        <a href="/recommend/{{ movie.id }}" class="view-all">See all →</a>
+      </div>
+
+      <div class="movies-grid" id="detailRecs" style="grid-template-columns: repeat(auto-fill, minmax(170px,1fr))">
+        <div class="loading-wrap" style="grid-column:1/-1"><div class="spinner"></div></div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<!-- ══ FOOTER ═══════════════════════════════════════════════ -->
+<footer>
+  <div class="container text-center">
+    <p class="mb-1">🎬 <strong style="color:#fff">MovieRec</strong> — Movie Recommendation System</p>
+    <p class="mb-0">
+      Built with
+      <a href="#">HTML5</a> · <a href="#">CSS3</a> · <a href="#">Bootstrap 5</a> ·
+      <a href="#">JavaScript</a> · <a href="#">Python Flask</a> · <a href="#">JSON</a>
+    </p>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/static/js/main.js"></script>
+</body>
+</html>
