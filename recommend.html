@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Recommendations for {{ movie.title }} — MovieRec</title>
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="/static/css/style.css" />
+</head>
+
+<body data-page="recommend" data-movie-id="{{ movie.id }}">
+
+<!-- ══ NAVBAR ══════════════════════════════════════════════ -->
+<nav class="navbar navbar-expand-lg">
+  <div class="container">
+    <a class="navbar-brand" href="/">🎬 Movie<span>Rec</span></a>
+
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu"
+            style="border-color:rgba(255,255,255,0.3)">
+      <span class="navbar-toggler-icon" style="filter:invert(1)"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navMenu">
+      <ul class="navbar-nav me-auto ms-3 gap-1">
+        <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
+        <li class="nav-item"><a class="nav-link" href="/">Browse All</a></li>
+      </ul>
+
+      <form class="d-flex align-items-center gap-2 me-2" id="navSearchForm">
+        <div style="position:relative">
+          <input type="text" id="navSearch" placeholder="Quick search…" autocomplete="off" />
+          <button type="submit" id="navSearchBtn"><i class="fas fa-search"></i></button>
+        </div>
+      </form>
+
+      <button class="dark-toggle me-2">🌙 Dark</button>
+      <div class="d-flex align-items-center gap-2">
+        <div style="background:var(--primary);color:#fff;border-radius:50%;
+                    width:32px;height:32px;display:flex;align-items:center;
+                    justify-content:center;font-weight:800;font-size:0.9rem;flex-shrink:0">
+          {{ user_name[0].upper() if user_name else '?' }}
+        </div>
+        <span style="color:rgba(255,255,255,0.85);font-size:0.88rem;font-weight:600">{{ user_name }}</span>
+        <a href="/logout"
+           style="background:rgba(230,57,70,0.18);border:1px solid rgba(230,57,70,0.4);
+                  color:var(--primary);border-radius:8px;padding:0.3rem 0.75rem;
+                  font-size:0.82rem;font-weight:700;transition:all 0.2s"
+           onmouseover="this.style.background='rgba(230,57,70,0.35)'"
+           onmouseout="this.style.background='rgba(230,57,70,0.18)'">
+          <i class="fas fa-sign-out-alt me-1"></i>Logout
+        </a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- ══ BREADCRUMB ══════════════════════════════════════════ -->
+<div style="background:var(--dark-2);padding:0.6rem 0;border-bottom:1px solid rgba(255,255,255,0.07)">
+  <div class="container">
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb mb-0" style="font-size:0.85rem">
+        <li class="breadcrumb-item"><a href="/" style="color:var(--accent)">🏠 Home</a></li>
+        <li class="breadcrumb-item">
+          <a href="/movie/{{ movie.id }}" style="color:var(--accent)">{{ movie.title }}</a>
+        </li>
+        <li class="breadcrumb-item active" style="color:rgba(255,255,255,0.6)">Recommendations</li>
+      </ol>
+    </nav>
+  </div>
+</div>
+
+<!-- ══ RECOMMEND HERO ══════════════════════════════════════ -->
+<section style="background:linear-gradient(135deg,var(--dark) 0%,var(--dark-2) 100%);padding:2.5rem 0">
+  <div class="container">
+    <div class="row align-items-center g-3">
+
+      <!-- Source movie mini card -->
+      <div class="col-auto">
+        <div style="width:90px;border-radius:12px;overflow:hidden;box-shadow:0 8px 30px rgba(0,0,0,0.5)">
+          <div class="poster-placeholder"
+               style="background:#{{ movie.poster_color }};min-height:130px;padding:0.5rem">
+            <div style="font-size:2rem">🎬</div>
+            <div style="font-size:0.65rem;font-weight:700;color:rgba(255,255,255,0.9);margin-top:0.3rem;text-align:center;line-height:1.2">
+              {{ movie.title }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Text -->
+      <div class="col">
+        <div style="display:inline-block;background:rgba(230,57,70,0.2);border:1px solid rgba(230,57,70,0.4);
+                    border-radius:50px;padding:0.25rem 0.8rem;font-size:0.78rem;color:var(--primary);
+                    font-weight:600;margin-bottom:0.5rem;letter-spacing:0.5px">
+          🤖 AI RECOMMENDATIONS
+        </div>
+        <h1 style="font-size:clamp(1.3rem,3vw,2rem);font-weight:900;color:#fff;margin:0 0 0.4rem">
+          Because you liked<br>
+          <span style="color:var(--accent)">{{ movie.title }}</span>
+        </h1>
+        <p style="color:rgba(255,255,255,0.6);font-size:0.92rem;margin:0">
+          <i class="fas fa-info-circle me-1"></i>
+          Matches ranked by genre similarity, shared tags, director, and release year.
+        </p>
+
+        <!-- How it works pills -->
+        <div class="d-flex flex-wrap gap-2 mt-3">
+          <span style="background:rgba(46,196,182,0.15);border:1px solid rgba(46,196,182,0.3);
+                       color:var(--teal);border-radius:50px;padding:0.2rem 0.7rem;font-size:0.78rem;font-weight:600">
+            ✅ Genre Match (45%)
+          </span>
+          <span style="background:rgba(244,162,97,0.15);border:1px solid rgba(244,162,97,0.3);
+                       color:var(--accent);border-radius:50px;padding:0.2rem 0.7rem;font-size:0.78rem;font-weight:600">
+            🏷️ Tag Similarity (35%)
+          </span>
+          <span style="background:rgba(163,163,255,0.15);border:1px solid rgba(163,163,255,0.3);
+                       color:#a29bfe;border-radius:50px;padding:0.2rem 0.7rem;font-size:0.78rem;font-weight:600">
+            📅 Year Proximity (10%)
+          </span>
+          <span style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);
+                       color:rgba(255,255,255,0.7);border-radius:50px;padding:0.2rem 0.7rem;font-size:0.78rem;font-weight:600">
+            🎬 Same Director (10%)
+          </span>
+        </div>
+      </div>
+
+      <!-- Back button -->
+      <div class="col-auto">
+        <a href="/movie/{{ movie.id }}"
+           style="display:inline-block;background:rgba(255,255,255,0.1);color:#fff;
+                  border:1px solid rgba(255,255,255,0.25);border-radius:8px;
+                  padding:0.55rem 1rem;font-size:0.88rem;font-weight:600;transition:all 0.2s">
+          <i class="fas fa-arrow-left me-1"></i> Back
+        </a>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ══ SOURCE MOVIE INFO STRIP ═════════════════════════════ -->
+<div style="background:var(--card-bg);border-bottom:1px solid var(--border);padding:0.7rem 0">
+  <div class="container">
+    <div class="d-flex flex-wrap align-items-center gap-3" style="font-size:0.85rem;color:var(--text-muted)">
+      <span><i class="fas fa-film me-1"></i> <strong style="color:var(--text)">{{ movie.title }}</strong></span>
+      <span>·</span>
+      <span>{{ movie.year }}</span>
+      <span>·</span>
+      <span>⭐ {{ movie.rating }}/10</span>
+      <span>·</span>
+      <span>
+        {% for g in movie.genre %}
+          <span style="background:#e63946;color:#fff;border-radius:50px;
+                       padding:0.1rem 0.5rem;font-size:0.75rem;font-weight:600;margin-right:3px">{{ g }}</span>
+        {% endfor %}
+      </span>
+      <span class="ms-auto" id="recCount" style="color:var(--primary);font-weight:700"></span>
+    </div>
+  </div>
+</div>
+
+<!-- ══ RECOMMENDATIONS GRID ════════════════════════════════ -->
+<main class="container py-4">
+
+  <div class="section-header">
+    <h2 class="section-title">🎯 Top Picks For You</h2>
+    <a href="/" class="view-all">Browse all movies →</a>
+  </div>
+
+  <!-- Explanation card -->
+  <div style="background:linear-gradient(135deg,rgba(46,196,182,0.08),rgba(230,57,70,0.08));
+              border:1px solid var(--border);border-radius:12px;padding:1rem 1.25rem;margin-bottom:1.5rem">
+    <div class="row align-items-center">
+      <div class="col-auto" style="font-size:1.8rem">🧠</div>
+      <div class="col">
+        <strong style="font-size:0.92rem;color:var(--text)">How recommendations work</strong>
+        <p style="font-size:0.82rem;color:var(--text-muted);margin:0.2rem 0 0">
+          Our algorithm computes a <strong>cosine-style similarity score</strong> between
+          <em>{{ movie.title }}</em> and every other movie using genre overlap, shared descriptive tags,
+          year closeness, and director match. Movies are ranked by this score (shown as the coloured bar).
+          Higher bar = stronger match.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Grid -->
+  <div class="movies-grid" id="recsGrid">
+    <div class="loading-wrap" style="grid-column:1/-1"><div class="spinner"></div></div>
+  </div>
+
+  <!-- Try another movie -->
+  <div style="text-align:center;margin-top:3rem;padding:2rem;
+              background:var(--card-bg);border:1px solid var(--border);border-radius:16px">
+    <div style="font-size:2.5rem;margin-bottom:0.75rem">🎬</div>
+    <h4 style="font-weight:700;color:var(--text)">Want different recommendations?</h4>
+    <p style="color:var(--text-muted);font-size:0.9rem;max-width:400px;margin:0 auto 1.25rem">
+      Browse our full collection and click "Similar" on any movie card to get personalised picks.
+    </p>
+    <a href="/"
+       style="display:inline-block;background:var(--primary);color:#fff;border-radius:8px;
+              padding:0.6rem 1.5rem;font-weight:700;font-size:0.95rem;transition:all 0.2s">
+      <i class="fas fa-film me-1"></i> Browse All Movies
+    </a>
+  </div>
+
+</main>
+
+<!-- ══ FOOTER ═══════════════════════════════════════════════ -->
+<footer>
+  <div class="container text-center">
+    <p class="mb-1">🎬 <strong style="color:#fff">MovieRec</strong> — Movie Recommendation System</p>
+    <p class="mb-0">
+      Built with
+      <a href="#">HTML5</a> · <a href="#">CSS3</a> · <a href="#">Bootstrap 5</a> ·
+      <a href="#">JavaScript</a> · <a href="#">Python Flask</a> · <a href="#">JSON</a>
+    </p>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/static/js/main.js"></script>
+</body>
+</html>
