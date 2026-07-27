@@ -1,0 +1,16 @@
+[
+  { "id": 1, "name": "Action",    "color": "e74c3c", "icon": "⚡" },
+  { "id": 2, "name": "Adventure", "color": "e67e22", "icon": "🌍" },
+  { "id": 3, "name": "Animation", "color": "f39c12", "icon": "🎨" },
+  { "id": 4, "name": "Comedy",    "color": "2ecc71", "icon": "😂" },
+  { "id": 5, "name": "Crime",     "color": "8e44ad", "icon": "🔍" },
+  { "id": 6, "name": "Drama",     "color": "3498db", "icon": "🎭" },
+  { "id": 7, "name": "History",   "color": "795548", "icon": "📜" },
+  { "id": 8, "name": "Horror",    "color": "1a1a1a", "icon": "👻" },
+  { "id": 9, "name": "Music",     "color": "9b59b6", "icon": "🎵" },
+  { "id": 10,"name": "Mystery",   "color": "2c3e50", "icon": "🕵️" },
+  { "id": 11,"name": "Romance",   "color": "e91e63", "icon": "❤️" },
+  { "id": 12,"name": "Sci-Fi",    "color": "00bcd4", "icon": "🚀" },
+  { "id": 13,"name": "Thriller",  "color": "f44336", "icon": "😱" },
+  { "id": 14,"name": "War",       "color": "607d8b", "icon": "⚔️" }
+]
